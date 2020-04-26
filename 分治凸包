@@ -1,0 +1,170 @@
+#include <iostream>
+#include <cmath>
+#include <algorithm>
+#include <functional>
+#include <set>
+
+using namespace std;
+
+set<int> goalPoint;
+
+class Point
+{
+    double x, y;
+    int idx;
+    public:
+        Point() {}
+        void set(double xx, double yy, int id) {
+            x = xx;
+            y = yy;
+            idx = id;
+        }
+        double getX() {
+            return this->x;
+        }
+        double getY() {
+            return this->y;
+        }
+        int getIdx() {
+            return this->idx;
+        }
+};
+
+class Insert
+{
+    public:
+        static void insert(int num, Point *p) {
+            for (int i = 0; i < num; i ++) {
+                double tx, ty;
+                cin >> tx >> ty;
+                p->set(tx, ty, i);
+                p ++;
+            }
+        }
+};
+
+class Distance
+{
+    public:
+        static double dis(Point *p1, Point *p2, Point *p3) {
+            //x1*y2 + x2*y3 + x3*y1 - x3*y2 - x1*y3 - x2*y1  大于零则k在线xy的左侧，小于零则在右侧
+            double tmp = p1->getX() * p2->getY() + p2->getX() * p3->getY() + p3->getX() * p1->getY() - p3->getX() * p2->getY() - p1->getX() * p3->getY() - p2->getX() * p1->getY();
+            return tmp;
+        }
+};
+
+class UpHull
+{
+    public:
+        static void upHull(Point *s, Point *t) {
+            double disMax = -1;
+            Point *next = NULL;
+            Point *iPOint;
+            for (iPOint = s + 1; iPOint < t; iPOint ++)
+            {
+                double tmpDis = Distance::dis(s, t, iPOint);
+                if (tmpDis > disMax)
+                {
+                    disMax = tmpDis;
+                    next = iPOint;
+                }
+            }
+
+            if (disMax == 0)
+            {
+                goalPoint.insert(next->getIdx());
+                goalPoint.insert(s->getIdx());
+                goalPoint.insert(t->getIdx());
+                return;
+            }
+            if (next == NULL)
+            {
+                goalPoint.insert(s->getIdx());
+                goalPoint.insert(t->getIdx());
+                return;
+            }
+
+            upHull(s, next);
+            upHull(next, t);
+        }
+};
+
+class DownHull
+{
+    public:
+        static void downHull(Point *s, Point *t) {
+            double disMin = 1;
+            Point *next = NULL;
+            Point *iPOint;
+            for (iPOint = s + 1; iPOint < t; iPOint ++)
+            {
+                double tmpDis = Distance::dis(s, t, iPOint);
+                if (tmpDis < disMin)
+                {
+                    disMin = tmpDis;
+                    next = iPOint;
+                }
+            }
+
+            if (disMin == 0)
+            {
+                goalPoint.insert(next->getIdx());
+                goalPoint.insert(s->getIdx());
+                goalPoint.insert(t->getIdx());
+                return;
+            }
+            if (next == NULL)
+            {
+                goalPoint.insert(s->getIdx());
+                goalPoint.insert(t->getIdx());
+                return;
+            }
+
+            downHull(s, next);
+            downHull(next, t);
+        }
+};
+
+class Solve
+{
+    public:
+        friend Insert;
+        friend Distance;
+        friend UpHull;
+        friend DownHull;
+
+        void solve(int num, Point *p) {
+            Insert::insert(num, p);
+            for (int i = 0; i < num; i ++) {
+                for (int j = 0; j < num - i - 1; j ++) {
+                    if (p[j].getX() == p[j + 1].getX()) {
+                        if (p[j].getY() > p[j + 1].getY()) {
+                            Point tmp = p[j];
+                            p[j] = p[j + 1];
+                            p[j + 1] = tmp;
+                        }
+                    }
+                    else if (p[j].getX() > p[j + 1].getX()) {
+                        Point tmp = p[j];
+                            p[j] = p[j + 1];
+                            p[j + 1] = tmp;
+                    }
+                }
+            }
+            UpHull::upHull(p, p + (num - 1));
+            DownHull::downHull(p, p + (num - 1));
+        }
+};
+
+int main()
+{
+    cout << "请输入点的个数(小于100)：";
+    int n;
+    cin >> n;
+    cout << "请输入各个点的坐标：" << endl;
+    Point point[105];
+    Solve test;
+    test.solve(n, point);
+    cout << "构成凸包的点的个数为：";
+    cout << goalPoint.size() << endl;
+}
