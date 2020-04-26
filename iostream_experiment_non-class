@@ -1,0 +1,82 @@
+#include <iostream>
+#include <fstream>
+
+using namespace std;
+
+/**
+ * topical：定义Staff结构体
+ * author：Liu Xiaoxia
+ * time：2020/4/24 23:07
+ */
+struct Staff{
+    int num;
+    char name[20];
+    int age;
+    double wages;
+};
+
+/**
+ * topical：录入5位员工信息，增加2位新员工，输出全部员工信息，查询某编号信息
+ * author：Liu Xiaoxia
+ * time：2020/4/25 0:04
+ */
+int main() {
+    Staff staff[10];
+
+    fstream iofile("staff.dat", ios::in | ios::out | ios::binary);
+    if (!iofile) {
+        cerr << "Open staff.dat error!" << endl;
+        exit(1);
+    }
+
+    cout << "Question 1:" << endl;
+    int n = 5;
+    cout << "请按照编号递增顺序依次输入5位员工的相关信息(编号 姓名 年龄 工资):" << endl;
+    for (int i = 0; i < n; i ++) {
+        cin >> staff[i].num >> staff[i].name >> staff[i].age >> staff[i].wages;
+        iofile.write((char *)&staff[i], sizeof(staff[i]));
+    }
+
+    cout << endl << "Question 2:" << endl;
+    iofile.seekg(0, ios::end);
+    cout << "请输入两位员工的相关信息(编号 姓名 年龄 工资)(编号大于已有编号):" << endl;
+    Staff tmpStaff;
+    for (int i = 0; i < 2; i ++) {
+        cin >> tmpStaff.num >> tmpStaff.name >> tmpStaff.age >> tmpStaff.wages;
+        iofile.write((char *)&tmpStaff, sizeof(tmpStaff));
+    }
+    n += 2;
+
+    cout << endl << "Question 3:" << endl;
+    iofile.seekg(0, ios::beg);
+    for (int i = 0; i < n; i ++) {
+        iofile.read((char *)&staff[i], sizeof(staff[i]));
+        cout << staff[i].num << ' ' << staff[i].name << ' ' << staff[i].age << ' ' << staff[i].wages << endl;
+    }
+
+    cout << endl << "Question 4:" << endl;
+    int number;
+    cout << "请输入您想查询的编号:(输入0结束查询)" << endl;
+    cin >> number;
+    bool flag;
+    while (number) {
+        iofile.seekg(0, ios::beg);
+        flag = false;
+        for (int i = 0; i < n; i++) {
+            iofile.read((char *)&staff[i], sizeof(staff[i]));
+            if (number == staff[i].num) {
+                flag = true;
+                cout << "编号为" << number << "的员工是第" << i + 1 << "位员工" << endl;
+                cout << staff[i].num << ' ' << staff[i].name << ' ' << staff[i].age << ' ' << staff[i].wages << endl;
+                break;
+            }
+        }
+        if (!flag) {
+            cout << "没有找到该编号的员工，请检查您的输入是否有误并重新输入。" << endl;
+        }
+        cin >> number;
+    }
+    iofile.close();
+
+    return 0;
+}
