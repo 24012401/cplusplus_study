@@ -1,0 +1,123 @@
+#include <iostream>
+#include <fstream>
+
+using namespace std;
+
+/**
+ * topical：定义Staff类
+ * author：Liu Xiaoxia
+ * time：2020/4/24 23:07
+ */
+class Staff{
+    int num;
+    string name;
+    int age;
+    double wages;
+    public:
+        void set(int nu, string nam, int ag, double wage) {
+            num = nu;
+            name = nam;
+            age = ag;
+            wages = wage;
+        }
+        void display() {
+            cout << "num = " << num << endl;
+            cout << "name = " << name << endl;
+            cout << "age = " << age << endl;
+            cout << "wages = " << wages << endl << endl;
+        }
+        int getNum() {
+            return num;
+        }
+};
+
+/**
+ * topical：定义Solve类，包含了解决问题的最主要的函数
+ * author：Liu Xiaoxia
+ * time：2020/4/24 23:20
+ */
+class Solve{
+    public:
+        void static work(Staff *pstaff) {
+            fstream iofile("staff.dat", ios::in | ios::out | ios::binary);
+            if (!iofile) {
+                cerr << "Open staff.dat error!" << endl;
+                exit(1);
+            }
+
+            int num, age;
+            string name;
+            double wages;
+            cout << "Question 1:" << endl;
+            int n = 5;
+            cout << "请按照编号递增顺序依次输入5位员工的相关信息(编号 姓名 年龄 工资):" << endl;
+            for (int i = 0; i < n; i++) {
+                cin >> num >> name >> age >> wages;
+                pstaff[i].set(num, name, age, wages);
+                iofile.write((char *)&pstaff[i], sizeof(pstaff[i]));
+            }
+
+            cout << endl << "Question 2:" << endl;
+            iofile.seekg(0, ios::end);
+            cout << "请输入两位员工的相关信息(编号 姓名 年龄 工资)(编号大于已有编号):" << endl;
+            Staff tmpStaff;
+            for (int i = 0; i < 2; i++) {
+                cin >> num >> name >> age >> wages;
+                tmpStaff.set(num, name, age, wages);
+                iofile.write((char *)&tmpStaff, sizeof(tmpStaff));
+            }
+            n += 2;
+
+            cout << endl << "Question 3:" << endl;
+            iofile.seekg(0, ios::beg);
+            for (int i = 0; i < n; i++) {
+                iofile.read((char *)&pstaff[i], sizeof(pstaff[i]));
+                pstaff[i].display();
+            }
+
+            cout << endl << "Question 4:" << endl;
+            int number;
+            cout << "请输入您想查询的编号:(输入0结束查询)" << endl;
+            cin >> number;
+            bool flag;
+            while (number) {
+                iofile.seekg(0, ios::beg);
+                flag = false;
+                for (int i = 0; i < n; i++) {
+                    iofile.read((char *)&pstaff[i], sizeof(pstaff[i]));
+                    if (number == pstaff[i].getNum()) {
+                        flag = true;
+                        cout << "编号为" << number << "的员工是第" << i + 1 << "位员工" << endl;
+                        pstaff[i].display();
+                        break;
+                    }
+                }
+                if (!flag) {
+                    cout << "没有找到该编号的员工，请检查您的输入是否有误并重新输入。" << endl;
+                }
+                cin >> number;
+            }
+            iofile.close();
+        }
+};
+
+/**
+ * topical：定义主函数，声明对象数组
+ * author：Liu Xiaoxia
+ * time：2020/4/24 23:14
+ * example：2000 ZhangSan 18 4500.0
+            2010 LiSi 25 5420.8
+            2012 WangWu 19 6412.4
+            2014 LeiDian 35 4582.6
+            2018 YunDuo 21 5426.1
+            2019 TianTang 23 6415.4
+            2020 WUHan 22 2222.2
+ */
+int main() {
+    //声明Staff类的对象数组
+    Staff staff[10];
+    //调用Solve类的静态函数work
+    Solve::work(staff);
+    
+    return 0;
+}
