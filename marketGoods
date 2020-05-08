@@ -1,0 +1,68 @@
+#include <iostream>
+#include <cstring>
+
+using namespace std;
+
+/**
+ * topic：定义Goods类，声明货物名称，定义进货及销售的函数
+ * author：Liu Xiaoxia
+ * time：2020/5/8 11:40
+ */
+class Goods{
+    double weight;
+    public:
+        Goods(){}
+        const char* name = "Lemon";
+        static double totalWeight;
+        void purchase(double w) { //进货
+            weight = w;
+            totalWeight += w;
+        }
+        void sellOut() { //销售
+            totalWeight -= weight;
+            weight = 0;
+        }
+        double getWeight() const { //获取当前货物重量
+            return weight;
+        }
+        static double getTotal() { //获取当前货物总重量
+            return totalWeight;
+        }
+};
+double Goods::totalWeight = 0; //初始化货物总重量
+
+/**
+ * topical：完成进货及销售，并及时获取货物总重量
+ * author：Liu Xiaoxia
+ * time：2020/5/8 12:27
+ * example：进货：12.2 45.6 85.4 1.3 6.8 95 52.1 0.63 60 5.8 总重量：364.83
+ *          销售：12.2 95 5.8 总重量：251.83
+ */
+int main() {
+    int n;
+    cout << "请输入总箱数：";
+    cin >> n;
+
+    Goods goods[100];
+    cout << "请依次输入各箱重量：";
+    for (int i = 0; i < n; i ++) {
+        double weight;
+        cin >> weight;
+        goods[i].purchase(weight);
+    }
+    cout << "进货完毕后货物总重量：" << Goods::getTotal() << endl;
+
+    cout << "请依次输入要卖掉的箱的号码(输入-1结束)：" << endl;
+    int num;
+    while (1) {
+        cin >> num;
+        if (num == -1) {
+            break;
+        }
+        cout << "该货物重量为：" << goods[num].getWeight() << endl;
+        goods[num].sellOut();
+    }
+    cout << "销售完毕后货物总重量：" << Goods::getTotal();
+
+    return 0;
+}
